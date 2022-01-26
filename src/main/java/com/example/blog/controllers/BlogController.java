@@ -2,15 +2,23 @@ package com.example.blog.controllers;
 
 import com.example.blog.model.Post;
 import com.example.blog.repo.PostRepository;
+import org.apache.tomcat.util.http.fileupload.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import org.springframework.stereotype.Controller;
-        import org.springframework.ui.Model;
-        import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Optional;
 
@@ -31,11 +39,29 @@ public class BlogController {
     public String blogAdd(Model model) {return "blog-add";}
 
     @PostMapping("/blog/add")
-    public String blogPostAdd(@RequestParam String title, @RequestParam String anons, @RequestParam String full_text, Model model){
+    public String blogPostAdd(@RequestParam String title, @RequestParam String anons, @RequestParam String full_text, @RequestParam("file") MultipartFile file, Model model) throws IOException {
+
         Post post = new Post(title, anons, full_text);
+        byte[] bFile = file.getBytes();
+        post.setPhoto(bFile);
         postRepository.save(post);
         return "redirect:/blog";
     }
+
+    private final Logger logger = LoggerFactory.getLogger(BlogController.class);
+
+
+//    @PostMapping("/createCar")
+//    public String createCar(@ModelAttribute Post post, @RequestParam("file") MultipartFile file) throws IOException {
+//        byte[] bFile = file.getBytes();
+//        post.setPhoto(bFile);
+//
+//        postRepository.save(post);
+//        logger.info("Post {} is created", post);
+//        return "redirect:/Cars";
+//    }
+
+
 
     @GetMapping("/blog/{id}")
     public String blogDetails(@PathVariable(value = "id") long id, Model model) {
@@ -71,8 +97,8 @@ public class BlogController {
         post.setFull_text(full_text);
         postRepository.save(post);
 
-            return "redirect:/blog";
-        }
+        return "redirect:/blog";
+    }
 
     @PostMapping("/blog/{id}/remove")
     public String blogPostDelete(@PathVariable(value = "id") long id, Model model) {
@@ -80,6 +106,19 @@ public class BlogController {
         postRepository.delete(post);
 
         return "redirect:/blog";
+    }
+
+    @GetMapping("/showImage/{id}")
+    public void showImage(@PathVariable long id, HttpServletResponse response) throws IOException {
+        response.setContentType("image/jpeg");
+
+        Optional<Post> postOptional = postRepository.findById(Long.valueOf(id));
+        if (postOptional.isPresent()) {
+            InputStream is = new ByteArrayInputStream(postOptional.get().getPhoto());
+            IOUtils.copy(is, response.getOutputStream());
+        } else {
+            logger.error("Post with id:{} was not find", id);
+        }
     }
 
 

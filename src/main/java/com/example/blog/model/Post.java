@@ -1,9 +1,6 @@
 package com.example.blog.model;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 
 @Entity
 public class Post {
@@ -14,6 +11,13 @@ public class Post {
 
     private String title, anons, full_text;
     private int views;
+
+        @Lob
+        @Basic(fetch = FetchType.LAZY)
+        @Column(length = 100000)
+        private byte[] photo;
+
+
 
     public long getId() {
         return id;
@@ -55,12 +59,21 @@ public class Post {
         this.views = views;
     }
 
-    public Post() {
-    }
+        public byte[] getPhoto() {
+            return photo;
+        }
+
+        public void setPhoto(byte[] photo) {
+            this.photo = photo;
+        }
+
+
+    public Post() { }
 
     public Post(String title, String anons, String full_text) {
         this.title = title;
         this.anons = anons;
         this.full_text = full_text;
+        //this.photo = photo;
     }
 }
