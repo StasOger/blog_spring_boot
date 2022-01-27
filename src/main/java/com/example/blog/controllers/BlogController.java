@@ -16,9 +16,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Optional;
 
@@ -39,27 +37,24 @@ public class BlogController {
     public String blogAdd(Model model) {return "blog-add";}
 
     @PostMapping("/blog/add")
-    public String blogPostAdd(@RequestParam String title, @RequestParam String anons, @RequestParam String full_text, @RequestParam("file") MultipartFile file, Model model) throws IOException {
+    public String blogPostAdd(@RequestParam String title, @RequestParam String anons, @RequestParam String full_text, @RequestParam("file") MultipartFile file, @RequestParam("audio") MultipartFile audio, Model model) throws IOException {
 
         Post post = new Post(title, anons, full_text);
         byte[] bFile = file.getBytes();
+        byte[] bAudio = audio.getBytes();
+
+        try (FileOutputStream fos = new FileOutputStream("D:/MUSIC/" + audio.getOriginalFilename())) {
+            fos.write(bAudio);
+        }
+        logger.info("audio saved" + audio.getOriginalFilename());
+
+        post.setAudioPath(audio.getOriginalFilename());
         post.setPhoto(bFile);
         postRepository.save(post);
         return "redirect:/blog";
     }
 
     private final Logger logger = LoggerFactory.getLogger(BlogController.class);
-
-
-//    @PostMapping("/createCar")
-//    public String createCar(@ModelAttribute Post post, @RequestParam("file") MultipartFile file) throws IOException {
-//        byte[] bFile = file.getBytes();
-//        post.setPhoto(bFile);
-//
-//        postRepository.save(post);
-//        logger.info("Post {} is created", post);
-//        return "redirect:/Cars";
-//    }
 
 
 
@@ -115,6 +110,21 @@ public class BlogController {
         Optional<Post> postOptional = postRepository.findById(Long.valueOf(id));
         if (postOptional.isPresent()) {
             InputStream is = new ByteArrayInputStream(postOptional.get().getPhoto());
+            IOUtils.copy(is, response.getOutputStream());
+        } else {
+            logger.error("Post with id:{} was not find", id);
+        }
+    }
+
+    @GetMapping("/showAudio/{id}")
+    public void showAudio(@PathVariable long id, HttpServletResponse response) throws IOException {
+        response.setContentType("audio/mp3");
+
+        Optional<Post> postOptional = postRepository.findById(Long.valueOf(id));
+        if (postOptional.isPresent()) {
+
+            String audioPath = "D:/MUSIC/" + postOptional.get().getAudioPath();
+            InputStream is = new FileInputStream(audioPath);
             IOUtils.copy(is, response.getOutputStream());
         } else {
             logger.error("Post with id:{} was not find", id);

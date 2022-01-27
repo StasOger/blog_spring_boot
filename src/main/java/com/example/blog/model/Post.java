@@ -12,12 +12,12 @@ public class Post {
     private String title, anons, full_text;
     private int views;
 
-        @Lob
-        @Basic(fetch = FetchType.LAZY)
-        @Column(length = 100000)
-        private byte[] photo;
+    @Lob
+    @Basic(fetch = FetchType.LAZY)
+    @Column(length = 999999999)
+    private byte[] photo;
 
-
+    private String audioPath ;
 
     public long getId() {
         return id;
@@ -59,16 +59,25 @@ public class Post {
         this.views = views;
     }
 
-        public byte[] getPhoto() {
-            return photo;
-        }
+    public byte[] getPhoto() {
+        return photo;
+    }
 
-        public void setPhoto(byte[] photo) {
-            this.photo = photo;
-        }
+    public void setPhoto(byte[] photo) {
+        this.photo = photo;
+    }
+
+    public String getAudioPath() {
+        return audioPath;
+    }
+
+    public void setAudioPath(String audioPath) {
+        this.audioPath = audioPath;
+    }
 
 
-    public Post() { }
+    public Post() {
+    }
 
     public Post(String title, String anons, String full_text) {
         this.title = title;

@@ -13,7 +13,10 @@
         <h3 th:text="${el.title}"/>
         <p th:text="${el.anons}"/>
         <img width="200" height="162" th:src="@{'showImage/' + ${el.id}}" >
-        <a th:href="'/blog/' + ${el.id}" class="btn btn-warning">Детальнее</a>
+
+        <audio th:src="@{'showAudio/' + ${el.id}}" id="audio" controls></audio>
+
+        <p><a th:href="'/blog/' + ${el.id}" class="btn btn-warning">Детальнее</a></p>
     </div>
 </div>
 <footer th:insert="blocks/footer :: footer"></footer>
